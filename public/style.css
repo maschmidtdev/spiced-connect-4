@@ -16,8 +16,12 @@ main {
 
 button {
     padding: 5px;
-    display: inline-block;
+    display: none;
     margin: 5px auto;
+}
+
+button.finished {
+    display: block;
 }
 
 #player .player-1 {
@@ -27,12 +31,16 @@ button {
     color: red;
 }
 
-#turn {
+#turn,
+#win,
+#lose {
     display: none;
-    margin-left: 10px;
+    margin-left: 5px;
 }
 
-#turn.turn {
+#turn.turn,
+#win.win,
+#lose.lose {
     display: inline-block;
 }
 

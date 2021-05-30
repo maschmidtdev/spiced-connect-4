@@ -14,7 +14,7 @@
 
     var clients = [];
     var currentPlayer;
-    var gameBoard = [];
+    var gameBoard;
     var gameFinished;
     init();
 
@@ -22,6 +22,8 @@
     io.on('connection', (socket) => {
         // Welcome current user
         socket.emit('message', 'Welcome!');
+
+        socket.emit('update', gameBoard);
 
         // Place client in array
         if (clients.length > 0 && clients[0] === 'waiting') {
@@ -109,12 +111,17 @@
             checkPositions.push(topDiagonal);
             checkPositions.push(bottomDiagonal);
 
-            if (!checkVictory(checkPositions, 0)) {
-                switchTurn();
-            } else {
+            if (checkVictory(checkPositions, 0)) {
                 gameFinished = true;
-                console.log('Player ' + currentPlayer + ' won!');
+            } else {
+                switchTurn();
             }
+        });
+
+        socket.on('reset', () => {
+            console.log('reset');
+            init();
+            io.sockets.emit('reset');
         });
     });
 
@@ -123,6 +130,7 @@
     function init() {
         currentPlayer = 1;
         gameFinished = false;
+        gameBoard = [];
         var n = 42;
         while (n > 0) {
             gameBoard.push(0);
@@ -142,13 +150,15 @@
 
     function getColPositions(col) {
         var positions = [];
-        for (i = col * 6; i <= col * 6 + 5; i++) positions.push(gameBoard[i]);
+        for (i = col * 6; i <= col * 6 + 5; i++) {
+            positions.push(i);
+        }
         return positions;
     }
     function getRowPositions(row) {
         var positions = [];
         for (var i = 0; i <= 6; i++) {
-            positions.push(gameBoard[i * 6 + row]);
+            positions.push(i * 6 + row);
         }
         return positions;
     }
@@ -163,7 +173,7 @@
 
         // Add positions diagonally down
         while (row <= 5 && col <= 6) {
-            positions.push(gameBoard[col * 6 + row]);
+            positions.push(col * 6 + row);
             row++;
             col++;
         }
@@ -180,7 +190,7 @@
 
         // Add positions diagonally up
         while (row >= 0 && col <= 6) {
-            positions.push(gameBoard[col * 6 + row]);
+            positions.push(col * 6 + row);
             row--;
             col++;
         }
@@ -197,12 +207,14 @@
             for (var i = 0; i < checkPositions[index].length; i++) {
                 var current = checkPositions[index][i];
 
-                if (current === currentPlayer) {
-                    // console.log('current', current);
-                    // console.log('currentPlayer', currentPlayer);
+                if (gameBoard[current] === currentPlayer) {
                     winPositions.push(current);
                     count++;
                     if (count >= 4) {
+                        io.sockets.emit('finish', {
+                            positions: winPositions,
+                            player: currentPlayer,
+                        });
                         return true;
                     }
                 } else {
