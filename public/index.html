@@ -47,6 +47,13 @@
                 </ul>
             </div>
         </script>
+        <!-- home -->
+        <script id="home" type="text/x-template">
+            <div class="home">
+                <gamelist></gamelist>
+                <userlist></userlist>
+            </div>
+        </script>
         <!-- profile -->
         <script id="profile" type="text/x-template">
             <div class="profile">
@@ -78,12 +85,12 @@
         <script id="game" type="text/x-template" @eventname="someFunction">
             <div v-if="!loading" class="game">
                 <div class="gameheader">
+
                     <h2>
                         <img :src="game.player_1.image_url" :alt="game.player_1.username"><span class="player-1">{{game.player_1.username}}</span>
                         VS
                         <span class="player-2">{{game.player_2.username}}</span><img :src="game.player_2.image_url" :alt="game.player_2.username">
                     </h2>
-                    <!-- {{game}} -->
                     <div v-if="!game.winner">
                         <h3 v-if="game.turn === game.player_1.id">It's <span class="player-1">{{game.player_1.username}}</span>'s turn.</h3>
                         <h3 v-else>It's <span class="player-2">{{game.player_2.username}}</span>'s turn.</h3>
@@ -93,6 +100,10 @@
                         <h3 v-else><span class="player-2">{{game.player_2.username}}</span> won!</h3>
                     </div>
                 </div>
+                <!-- {{game.gamestate}}
+                {{game.winner}}
+                {{game.player_1}}
+                {{game.player_2}} -->
                 <div class="connect-four">
                     <game-column v-for="index in 7" :key="index" :col="index-1" :game="game"></game-column>
                 </div>
@@ -107,7 +118,23 @@
         <!-- game-cell -->
         <script id="game-cell" type="text/x-template">
             <div class="position">
-                <div class="circle" :class="classObject"></div>
+                <div class="circle" :class="classObject">
+                    {{position}}
+                </div>
+            </div>
+        </script>
+        <!-- userlist -->
+        <script id="userlist" type="text/x-template">
+            <div class="userlist" v-if="!loading">
+                <h2>Users</h2>
+                <ul v-if="users">
+                    <li v-for="user in users" class="user">
+                        <img :src="user.image_url" alt="">
+                        <span>{{user.username}}</span>
+                    </li>
+
+                </ul>
+
             </div>
         </script>
 

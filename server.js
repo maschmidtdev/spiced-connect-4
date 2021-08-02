@@ -11,7 +11,8 @@
                 req.headers.referer.startsWith('http://localhost:3000')
             ),
     });
-    const cookieSecret = require('./secrets').cookieSecret;
+    const cookieSecret =
+        process.env.COOKIE_SECRET || require('./secrets.json').cookieSecret;
     const cookieSession = require('cookie-session');
     const cookieSessionMiddleware = cookieSession({
         secret: cookieSecret,
@@ -20,6 +21,7 @@
     const hashPassword = require('./hashPassword');
     const { compare } = require('bcryptjs');
     const {
+        getUsers,
         getUserByEmail,
         getUserById,
         getGames,
@@ -44,10 +46,10 @@
     io.use(function (socket, next) {
         cookieSessionMiddleware(socket.request, socket.request.res, next);
     });
-    io.configure(function () {
-        io.set('transports', ['xhr-polling']);
-        io.set('polling duration', 10);
-    });
+    // io.configure(function () {
+    //     io.set('transports', ['xhr-polling']);
+    //     io.set('polling duration', 10);
+    // });
 
     // Set static folder
     app.use(express.static(path.join(__dirname, 'public')));
@@ -70,6 +72,12 @@
 
         res.json(user);
     });
+    app.get('/api/users', async (req, res) => {
+        const users = await getUsers();
+        console.log('[server:/api/users] users:', users);
+        res.json(users);
+    });
+
     app.get('/api/user/:user_id', async (req, res) => {
         const { user_id } = req.params;
         const user = await getUserById(user_id);
@@ -85,7 +93,9 @@
         // const response = await getUserByEmail('maschmidt.dev@gmail.com');
         console.log('[server:api/login] email:', req.body.email);
         console.log('[server:api/login] response:', response);
-        req.session.user_id = response.id;
+        if (response) {
+            req.session.user_id = response.id;
+        }
         res.redirect('/');
     });
     app.get('/api/games', async (req, res) => {
@@ -121,8 +131,14 @@
                 });
         });
     });
+    app.get('/', function (req, res) {
+        return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    });
     app.get('*', function (req, res) {
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        if (req.session.user_id) {
+            return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        }
+        res.redirect('/');
     });
 
     // ==================== GAME // IO ====================
@@ -216,6 +232,7 @@
 
         // Player clicks
         socket.on('place_tile', ({ col, game_id, user_id }) => {
+            console.log('[server:socket:place_tile]');
             // Get the current game
             var game = games.filter((game) => game.id == game_id)[0];
             // Determine if its this players turn, exit if no
@@ -322,7 +339,8 @@
 
         for (var i = (col + 1) * 6 - 1; i >= (col + 1) * 6 - 6; i--) {
             if (game.gamestate[i] == 0) {
-                game.gamestate[i] = game.turn === game.player_1 ? 1 : 2;
+                game.gamestate[i] =
+                    game.turn === game.player_1 ? game.player_1 : game.player_2;
                 return i - col * 6;
             }
         }

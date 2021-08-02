@@ -139,6 +139,13 @@
         watch: {},
         methods: {},
     });
+    const home = Vue.component('home', {
+        template: '#home',
+        data: function () {
+            return {};
+        },
+        mounted: async function () {},
+    });
     const profile = Vue.component('profile', {
         template: '#profile',
         data: function () {
@@ -150,6 +157,24 @@
         mounted: async function () {
             const { data } = await axios.get('/api/user');
             this.user = data;
+            this.loading = false;
+        },
+        watch: {},
+        methods: {},
+    });
+    const userlist = Vue.component('userlist', {
+        template: '#userlist',
+        data: function () {
+            return {
+                loading: true,
+                users: null,
+            };
+        },
+        mounted: async function () {
+            const { data } = await axios.get('/api/users');
+            this.users = data;
+            console.log('[client:userlist] users:', this.users);
+
             this.loading = false;
         },
         watch: {},
@@ -211,7 +236,7 @@
             const player_2 = await axios.get(`/api/user/${this.game.player_2}`);
             this.game.player_1 = player_1.data;
             this.game.player_2 = player_2.data;
-            console.log('game', this.game);
+            // console.log('game', this.game);
 
             socket.emit('join_room', this.game_id);
             socket.on('user_joined', (game_id) => {
@@ -220,8 +245,9 @@
             socket.on('game_update', (game) => {
                 this.game.turn = game.turn;
                 this.game.gamestate = game.gamestate;
-                this.game.winner = game.winner;
-                console.log('client: game', this.game);
+                if (game.winner) {
+                    this.game.winner = JSON.parse(game.winner);
+                }
             });
             socket.on('placeTile', ({ index, player }) => {
                 console.log('[placeTile]');
@@ -255,7 +281,6 @@
         watch: {},
         methods: {
             onClick: function () {
-                
                 socket.emit('place_tile', {
                     col: this.col,
                     game_id: this.game.id,
@@ -268,18 +293,23 @@
         props: ['position', 'game'],
         template: '#game-cell',
         data: function () {
-            return {
-                player: 0,
-            };
+            return {};
         },
-        mounted: function () {
-            // console.log('[position]', this.position);
-        },
+        mounted: function () {},
         computed: {
             classObject: function () {
                 return {
-                    'player-1': this.game.gamestate[this.position] === 1,
-                    'player-2': this.game.gamestate[this.position] === 2,
+                    'player-1':
+                        this.game.gamestate[this.position] ===
+                        this.game.player_1.id,
+                    'player-2':
+                        this.game.gamestate[this.position] ===
+                        this.game.player_2.id,
+                    // 'player-1': this.game.gamestate[this.position] === 1,
+                    // 'player-2': this.game.gamestate[this.position] === 2,
+                    win:
+                        this.game.winner &&
+                        this.game.winner.includes(this.position),
                 };
             },
         },
@@ -290,7 +320,7 @@
     //  ===================== ROUTES ==========================
     Vue.use(VueRouter);
     const routes = [
-        { path: '/', component: gamelist },
+        { path: '/', component: home },
         { path: '/game/:game_id', component: game, props: true },
         { path: '/profile', component: profile },
     ];

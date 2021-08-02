@@ -61,6 +61,18 @@ function getUserById(id) {
             console.log(error);
         });
 }
+function getUsers() {
+    // console.log('[db:getUsers');
+    return db
+        .query(`SELECT * FROM users`)
+        .then((result) => {
+            // console.log('result.rows', result.rows);
+            return result.rows;
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
 
 // Games
 function getGames() {
@@ -106,6 +118,7 @@ function updateGame({ turn, gamestate, id, winner }) {
 
 module.exports = {
     createUser,
+    getUsers,
     getUserByEmail,
     getUserById,
     getGames,

@@ -129,8 +129,8 @@ a:visited {
     height: 75%;
 }
 
-.win .circle {
-    border: 8px solid green;
+.win.circle {
+    border: 10px solid green;
 }
 
 .player-1.circle {
@@ -145,13 +145,44 @@ a:visited {
 .player-2 .circle {
     background-color: red;
 }
+/* HOME */
+.home {
+    width: 90%;
+    max-width: 1000px;
+    display: flex;
+    justify-content: space-around;
+    margin: 0 auto;
+}
 
 /* GAME LIST */
+.gamelist {
+    width: 50%;
+}
 li.game {
     margin: 0.3rem 0;
     background-color: rgba(255, 255, 255, 0.3);
 }
 li.game:hover {
+    cursor: pointer;
+    background-color: var(--linkhover);
+}
+/* USER LIST */
+.userlist {
+    width: 40%;
+}
+li.user {
+    margin: 0.3rem 0;
+    background-color: rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+}
+li.user img {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+li.user:hover {
     cursor: pointer;
     background-color: var(--linkhover);
 }
