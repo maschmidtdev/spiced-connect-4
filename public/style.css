@@ -4,6 +4,14 @@
     box-sizing: border-box;
 }
 
+:root {
+    --player1: yellow;
+    --player2: red;
+    --background: ghostwhite;
+    --linkhover: rgba(255, 255, 255, 0.3);
+    --text-primary: black;
+}
+
 body {
     background-color: rgb(55, 97, 194);
     font-family: Verdana, Geneva, Tahoma, sans-serif;
@@ -11,12 +19,25 @@ body {
 
 main {
     text-align: center;
-    padding-top: 15px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande',
+        'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+ul {
+    list-style-type: none;
+}
+
+ul.top-nav {
+    display: flex;
+    justify-content: space-between;
+}
+
+ul.top-nav li {
+    padding: 1rem;
 }
 
 button {
     padding: 5px;
-    display: none;
     margin: 5px auto;
 }
 
@@ -24,10 +45,45 @@ button.finished {
     display: block;
 }
 
-#player .player-1 {
+/* =============== STYLES ================== */
+.headertop {
+    display: flex;
+    justify-content: space-between;
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 1rem;
+}
+
+a {
+    text-decoration: none;
+}
+a:visited {
+    color: var(--text-primary);
+}
+
+/* =============== GAME ================== */
+
+.gameheader {
+    margin: 1rem;
+}
+.gameheader h2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.gameheader h2 * {
+    margin: 0 0.5rem;
+}
+.gameheader h2 img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.player-1 {
     color: yellow;
 }
-#player .player-2 {
+.player-2 {
     color: red;
 }
 
@@ -50,6 +106,7 @@ button.finished {
     background-color: cornflowerblue;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    border-radius: 50px;
     margin: 15px auto;
 }
 
@@ -76,9 +133,25 @@ button.finished {
     border: 8px solid green;
 }
 
+.player-1.circle {
+    background-color: yellow;
+}
 .player-1 .circle {
     background-color: yellow;
 }
+.player-2.circle {
+    background-color: red;
+}
 .player-2 .circle {
     background-color: red;
+}
+
+/* GAME LIST */
+li.game {
+    margin: 0.3rem 0;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+li.game:hover {
+    cursor: pointer;
+    background-color: var(--linkhover);
 }

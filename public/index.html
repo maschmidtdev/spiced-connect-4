@@ -5,160 +5,118 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <link href="style.css" rel="stylesheet" type="text/css" media="all" />
+        <link href="/style.css" rel="stylesheet" type="text/css" media="all" />
         <title>Connect 4</title>
     </head>
     <body>
-        <main>
-            <div id="player">
-                <h1>You are <span>a spectator. </span></h1>
-            </div>
-            <div class="connect-four">
-                <div class="column">
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                </div>
-                <div class="column">
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                    <div class="position">
-                        <div class="circle"></div>
-                    </div>
-                </div>
-            </div>
+        <main id="main">
+            <h1 v-if="loading">Loading...</h1>
+            <welcome v-if="!user_id && !loading" :user_id="user_id"></welcome>
+
+            <app v-if="user_id && !loading"></app>
         </main>
 
+        <!-- ============ WELCOME ============= -->
+        <script id="welcome" type="text/x-template">
+            <div class="welcome">
+                <h1>Login</h1>
+                <form action="/api/login" method="POST">
+                    <input type="text" name="email" placeholder="Email" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+                <a href="/register">Register</a>
+            </div>
+        </script>
+
+        <!-- ============ APP ============= -->
+        <script id="app" type="text/x-template">
+            <div class="app">
+                <headertop></headertop>
+                <router-view :user="user"></router-view>
+            </div>
+        </script>
+        <!-- headertop -->
+        <script id="headertop" type="text/x-template">
+            <div v-if="!loading" class="headertop">
+                <h1>Welcome {{user.username}} !  </h1>
+                <ul class="top-nav">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/profile">Profile</a></li>
+                    <li><a href="/logout">Logout</a></li>
+                </ul>
+            </div>
+        </script>
+        <!-- profile -->
+        <script id="profile" type="text/x-template">
+            <div class="profile">
+                <ul v-if="!loading">
+                    <li><img :src="user.image_url" alt=""></li>
+                    <li>Email: {{user.email}}</li>
+                    <li>Username: {{user.username}}</li>
+                </ul>
+            </div>
+        </script>
+        <!-- gamelist -->
+        <script id="gamelist" type="text/x-template">
+            <div class="gamelist" v-if="!loading">
+                <h2 v-if="games.length > 0">Current games:</h2>
+                <h2 v-else>No active games</h2>
+                <ul v-if="games">
+                    <li v-for="game in games" class="game">
+                        <a :href="'/game/' + game.id">
+                            <h3>
+                                <span class="player-1">{{game.player_1.username}}</span> VS <span class="player-2">{{game.player_2.username}}</span>
+                            </h3>
+                        </a>
+                    </li>
+                </ul>
+
+            </div>
+        </script>
+        <!-- game -->
+        <script id="game" type="text/x-template" @eventname="someFunction">
+            <div v-if="!loading" class="game">
+                <div class="gameheader">
+                    <h2>
+                        <img :src="game.player_1.image_url" :alt="game.player_1.username"><span class="player-1">{{game.player_1.username}}</span>
+                        VS
+                        <span class="player-2">{{game.player_2.username}}</span><img :src="game.player_2.image_url" :alt="game.player_2.username">
+                    </h2>
+                    <!-- {{game}} -->
+                    <div v-if="!game.winner">
+                        <h3 v-if="game.turn === game.player_1.id">It's <span class="player-1">{{game.player_1.username}}</span>'s turn.</h3>
+                        <h3 v-else>It's <span class="player-2">{{game.player_2.username}}</span>'s turn.</h3>
+                    </div>
+                    <div v-else>
+                        <h3 v-if="game.turn === game.player_1.id"><span class="player-1">{{game.player_1.username}}</span> won!</h3>
+                        <h3 v-else><span class="player-2">{{game.player_2.username}}</span> won!</h3>
+                    </div>
+                </div>
+                <div class="connect-four">
+                    <game-column v-for="index in 7" :key="index" :col="index-1" :game="game"></game-column>
+                </div>
+            </div>
+        </script>
+        <!-- game-column -->
+        <script id="game-column" type="text/x-template">
+            <div v-if="!loading" class="column" @click="onClick">
+                <game-cell v-for="cell_index in 6" :key="cell_index" :position="col * 6 + (cell_index-1)" :game="game"></game-cell>
+            </div>
+        </script>
+        <!-- game-cell -->
+        <script id="game-cell" type="text/x-template">
+            <div class="position">
+                <div class="circle" :class="classObject"></div>
+            </div>
+        </script>
+
+        <!-- ============ IMPORTS ============= -->
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
-        <script src="js/main.js"></script>
+        <script src="/js/vue.js"></script>
+        <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+        <script src="/js/client.js"></script>
     </body>
 </html>
