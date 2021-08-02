@@ -44,6 +44,10 @@
     io.use(function (socket, next) {
         cookieSessionMiddleware(socket.request, socket.request.res, next);
     });
+    io.configure(function () {
+        io.set('transports', ['xhr-polling']);
+        io.set('polling duration', 10);
+    });
 
     // Set static folder
     app.use(express.static(path.join(__dirname, 'public')));
