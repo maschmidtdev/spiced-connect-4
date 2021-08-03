@@ -73,8 +73,44 @@ function getUsers() {
             console.log(error);
         });
 }
+function getChallengers(user_id) {
+    // console.log('[db:getChallengers');
+    return db
+        .query(
+            `SELECT users.id, username, image_url FROM users
+                JOIN games
+                ON users.id = games.player_1
+                WHERE games.accepted = false
+                AND games.player_2 = $1`,
+            [user_id]
+            // [user_id]
+        )
+        .then((result) => {
+            // console.log('[db:getChallengers] result.rows', result.rows);
+            return result.rows;
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
 
 // Games
+function createGame({ player_1, player_2 }) {
+    return db
+        .query(
+            `INSERT INTO games (player_1, player_2, turn) 
+                VALUES ($1, $2, $1)
+                RETURNING *`,
+            [player_1, player_2]
+        )
+        .then((result) => {
+            // console.log('result.rows', result.rows);
+            return result.rows;
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
 function getGames() {
     // console.log('[db:getGames]');
     return db
@@ -87,10 +123,43 @@ function getGames() {
             console.log(error);
         });
 }
+function getGamesByUser(user_id) {
+    // console.log('[db:getGames]');
+    return db
+        .query(
+            `SELECT * FROM games 
+                WHERE player_1 = $1
+                OR player_2 = $1
+                ORDER BY id ASC`,
+            [user_id]
+        )
+        .then((result) => {
+            // console.log('result.rows', result.rows);
+            return result.rows;
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
 function getGameById(game_id) {
     // console.log('[db:getGames]');
     return db
         .query(`SELECT * FROM games WHERE id = $1`, [game_id])
+        .then((result) => {
+            // console.log('result.rows[0]', result.rows[0]);
+            return result.rows[0];
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
+function getGame({ player_1, player_2 }) {
+    // console.log('[db:getGame]');
+    return db
+        .query(`SELECT * FROM games WHERE player_1 = $1 AND player_2 = $2`, [
+            player_1,
+            player_2,
+        ])
         .then((result) => {
             // console.log('result.rows[0]', result.rows[0]);
             return result.rows[0];
@@ -115,13 +184,35 @@ function updateGame({ turn, gamestate, id, winner }) {
             console.log(error);
         });
 }
+function acceptGame({ player_1, player_2 }) {
+    return db
+        .query(
+            `UPDATE games SET accepted = true
+              WHERE (player_1 = $1 AND player_2 = $2)
+              OR (player_2 = $1 AND player_1 = $2)
+              RETURNING *`,
+            [player_1, player_2]
+        )
+        .then((result) => {
+            // console.log('[db:acceptGame] result.rows', result.rows);
+            return result.rows;
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
 
 module.exports = {
     createUser,
     getUsers,
+    getChallengers,
     getUserByEmail,
     getUserById,
+    createGame,
     getGames,
+    getGame,
+    getGamesByUser,
     getGameById,
     updateGame,
+    acceptGame,
 };

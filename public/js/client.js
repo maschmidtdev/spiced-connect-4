@@ -139,6 +139,26 @@
         watch: {},
         methods: {},
     });
+    const modal = Vue.component('modal', {
+        template: '#modal',
+        data: function () {
+            return {
+                message: '',
+                show: false,
+            };
+        },
+        mounted: function () {
+            socket.on('modal', (message) => {
+                this.show = true;
+                this.message = message;
+                setTimeout(() => {
+                    this.show = false;
+                }, 3000);
+            });
+        },
+        watch: {},
+        methods: {},
+    });
     const home = Vue.component('home', {
         template: '#home',
         data: function () {
@@ -167,18 +187,56 @@
         data: function () {
             return {
                 loading: true,
+                user_id: null,
+                challengers: null,
                 users: null,
             };
         },
         mounted: async function () {
+            const user_id = await axios.get('/api/user_id');
             const { data } = await axios.get('/api/users');
-            this.users = data;
-            console.log('[client:userlist] users:', this.users);
+            // console.log('[client:userlist] data:', data);
+            this.user_id = user_id.data;
+            this.challengers = data.challengers;
+            this.users = data.users;
 
             this.loading = false;
         },
         watch: {},
-        methods: {},
+        methods: {
+            challenge: function (challenged_id) {
+                axios
+                    .post('/api/challenge', {
+                        player_1: this.user_id,
+                        player_2: challenged_id,
+                    })
+                    .then((response) => {
+                        console.log(
+                            ('[client:userlist:challenge] response:', response)
+                        );
+                    })
+                    .catch((error) => {
+                        socket.emit('modal', error.response.data.error);
+                    });
+            },
+            accept: function (challenger_id) {
+                axios
+                    .post('/api/accept', {
+                        player_1: challenger_id,
+                        player_2: this.user_id,
+                    })
+                    .then((response) => {
+                        console.log(
+                            '[client:userlist:accept] response:',
+                            response
+                        );
+                        socket.emit(
+                            'modal',
+                            'Game accepted! Refresh page to join'
+                        );
+                    });
+            },
+        },
     });
 
     //  ===================== GAME ==========================
@@ -188,27 +246,37 @@
         data: function () {
             return {
                 loading: true,
-                games: null,
+                self_games: null,
+                other_games: null,
             };
         },
         mounted: async function () {
             const { data } = await axios.get('/api/games');
-            this.games = data;
-            // console.log('[client:gamelist] games:', this.games);
-            let player_1, player_2;
-            for (id in this.games) {
-                // console.log('id', id);
-                // console.log('gamers[id]', this.games[id].player_1);
-                player_1 = await axios.get(
-                    `/api/user/${this.games[id].player_1}`
-                );
-                player_2 = await axios.get(
-                    `/api/user/${this.games[id].player_2}`
-                );
-                this.games[id].player_1 = player_1.data;
-                this.games[id].player_2 = player_2.data;
-            }
+            const response = await axios.get('/api/user_id');
+            let games = data;
+            let user_id = response.data;
 
+            let player_1, player_2;
+            // Get player data into game objects
+            for (id in games) {
+                player_1 = await axios.get(`/api/user/${games[id].player_1}`);
+                player_2 = await axios.get(`/api/user/${games[id].player_2}`);
+                games[id].player_1 = player_1.data;
+                games[id].player_2 = player_2.data;
+            }
+            // Only show games that were accepted by the other user
+            games = games.filter((game) => game.accepted);
+            // Games this user is part of
+            this.self_games = games.filter(
+                (game) =>
+                    game.player_1.id === user_id || game.player_2.id === user_id
+            );
+            // Games of other users
+            this.other_games = games.filter(
+                (game) =>
+                    game.player_1.id !== user_id && game.player_2.id !== user_id
+            );
+            // console.log('[client:gamelist] games:', this.games);
             this.loading = false;
         },
         watch: {},
@@ -231,12 +299,12 @@
             this.game = {
                 ...data,
                 gamestate: JSON.parse(data.gamestate),
+                winner: data.winner && JSON.parse(data.winner),
             };
             const player_1 = await axios.get(`/api/user/${this.game.player_1}`);
             const player_2 = await axios.get(`/api/user/${this.game.player_2}`);
             this.game.player_1 = player_1.data;
             this.game.player_2 = player_2.data;
-            // console.log('game', this.game);
 
             socket.emit('join_room', this.game_id);
             socket.on('user_joined', (game_id) => {

@@ -22,11 +22,15 @@
     const { compare } = require('bcryptjs');
     const {
         getUsers,
+        getChallengers,
         getUserByEmail,
         getUserById,
+        createGame,
         getGames,
+        getGame,
         getGameById,
         updateGame,
+        acceptGame,
     } = require('./db');
 
     // Middleware
@@ -43,9 +47,9 @@
     );
     app.use(express.json());
     app.use(cookieSessionMiddleware);
-    io.use(function (socket, next) {
-        cookieSessionMiddleware(socket.request, socket.request.res, next);
-    });
+    // io.use(function (socket, next) {
+    //     cookieSessionMiddleware(socket.request, socket.request.res, next);
+    // });
     // io.configure(function () {
     //     io.set('transports', ['xhr-polling']);
     //     io.set('polling duration', 10);
@@ -73,9 +77,22 @@
         res.json(user);
     });
     app.get('/api/users', async (req, res) => {
-        const users = await getUsers();
-        console.log('[server:/api/users] users:', users);
-        res.json(users);
+        const challengers = await getChallengers(req.session.user_id);
+        let users = await getUsers();
+        // console.log('[server:/api/users] challengers:', challengers);
+
+        users = users.filter((user) => {
+            for (c of challengers) {
+                if (user.id === c.id) {
+                    console.log('return false');
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        // console.log('[server:/api/users] users:', users);
+        res.json({ challengers, users });
     });
 
     app.get('/api/user/:user_id', async (req, res) => {
@@ -97,6 +114,28 @@
             req.session.user_id = response.id;
         }
         res.redirect('/');
+    });
+    app.post('/api/challenge', async (req, res) => {
+        const game = await getGame(req.body);
+        if (game) {
+            return res.status(500).json({
+                error: 'Game with that user already exists!',
+            });
+        }
+        const response = await createGame(req.body);
+        games.push(response[0]);
+        // console.log('[server:/api/challenge] response:', response);
+        res.json(response);
+    });
+    app.post('/api/accept', async (req, res) => {
+        const response = await acceptGame(req.body);
+        console.log('[server:/api/accept] response:', response);
+        games = games.filter((game) => game.id !== response[0].id);
+        games.push({
+            ...response[0],
+            gamestate: JSON.parse(response[0].gamestate),
+        });
+        res.json(response);
     });
     app.get('/api/games', async (req, res) => {
         const response = await getGames();
@@ -230,6 +269,10 @@
             clients = clients.filter((client) => client !== socket.id);
         });
 
+        socket.on('modal', (message) => {
+            socket.emit('modal', message);
+        });
+
         // Player clicks
         socket.on('place_tile', ({ col, game_id, user_id }) => {
             console.log('[server:socket:place_tile]');
@@ -239,6 +282,7 @@
             if (game.turn !== user_id || game.winner) {
                 return;
             }
+
             // Get the row and place tile
             var row = server_placeTile(col, game);
             // Exit if column is full
@@ -263,6 +307,8 @@
                 game.turn =
                     game.turn === game.player_1 ? game.player_2 : game.player_1;
             }
+
+            // console.log('[server:place_tile] game:', game);
 
             updateGame(game).then(() => {
                 io.to(game_id.toString()).emit('game_update', game);
@@ -335,12 +381,16 @@
         return -1;
     }
     function server_placeTile(col, game) {
-        // console.log('GAME:', game);
+        console.log('[server_placeTile] game', game);
+        console.log('[server_placeTile] game.turn', game.turn);
+        console.log('[server_placeTile] game.player_1', game.player_1);
+        console.log('[server_placeTile] game.player_2', game.player_2);
 
         for (var i = (col + 1) * 6 - 1; i >= (col + 1) * 6 - 6; i--) {
             if (game.gamestate[i] == 0) {
                 game.gamestate[i] =
                     game.turn === game.player_1 ? game.player_1 : game.player_2;
+                console.log('[server_placeTile] gamestate:', game.gamestate);
                 return i - col * 6;
             }
         }

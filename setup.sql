@@ -10,6 +10,8 @@ CREATE TABLE users (
   username      VARCHAR(255) NOT NULL,
   password_hash VARCHAR NOT NULL,
   image_url     TEXT,
+  wins          INTEGER DEFAULT 0,
+  losses        INTEGER DEFAULT 0,
   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -18,8 +20,9 @@ CREATE TABLE games (
   id            SERIAL PRIMARY KEY,
   player_1      INTEGER REFERENCES users(id) NOT NULL,
   player_2      INTEGER REFERENCES users(id) NOT NULL,
+  accepted      BOOLEAN DEFAULT FALSE,
   turn          INTEGER REFERENCES users(id) NOT NULL,
-  gamestate     TEXT,
+  gamestate     TEXT DEFAULT '[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]',
   winner        TEXT DEFAULT NULL,
   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -35,8 +38,8 @@ INSERT INTO users (email, username, password_hash, image_url) VALUES ('tommy@gma
 
 
 -- create some games
-INSERT INTO games (player_1, player_2, turn, gamestate) VALUES (1, 2, 1, '[0,0,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1]');
-INSERT INTO games (player_1, player_2, turn, gamestate) VALUES (2, 3, 2, '[0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,0,0,2]');
-INSERT INTO games (player_1, player_2, turn, gamestate) VALUES (3, 1, 3, '[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]');
-INSERT INTO games (player_1, player_2, turn, gamestate) VALUES (4, 5, 4, '[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]');
-INSERT INTO games (player_1, player_2, turn, gamestate) VALUES (6, 7, 6, '[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]');
+INSERT INTO games (player_1, player_2, turn, accepted, gamestate) VALUES (1, 2, 1, TRUE,'[0,0,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,1]');
+INSERT INTO games (player_1, player_2, turn, accepted, gamestate) VALUES (2, 3, 2, TRUE,'[0,0,0,0,0,2,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0,0,0,3,0,0,0,0,0,2]');
+INSERT INTO games (player_1, player_2, turn, accepted, gamestate) VALUES (3, 1, 3, TRUE,'[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]');
+INSERT INTO games (player_1, player_2, turn, accepted, gamestate) VALUES (4, 5, 4, TRUE,'[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]');
+INSERT INTO games (player_1, player_2, turn, accepted, gamestate) VALUES (6, 7, 6, TRUE,'[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]');

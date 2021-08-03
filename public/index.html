@@ -33,7 +33,10 @@
         <script id="app" type="text/x-template">
             <div class="app">
                 <headertop></headertop>
+                <br>
+                <br>
                 <router-view :user="user"></router-view>
+                <modal></modal>
             </div>
         </script>
         <!-- headertop -->
@@ -44,7 +47,16 @@
                     <li><a href="/">Home</a></li>
                     <li><a href="/profile">Profile</a></li>
                     <li><a href="/logout">Logout</a></li>
+                    <img :src="user.image_url" :alt="user.username">
                 </ul>
+            </div>
+        </script>
+        <!-- modal -->
+        <script id="modal" type="text/x-template">
+            <div class="modal" :class="{show: show}">
+                <div class="content">
+                    <p>{{message}}</p>
+                </div>
             </div>
         </script>
         <!-- home -->
@@ -57,20 +69,33 @@
         <!-- profile -->
         <script id="profile" type="text/x-template">
             <div class="profile">
+                <img :src="user.image_url" alt="">
                 <ul v-if="!loading">
-                    <li><img :src="user.image_url" alt=""></li>
                     <li>Email: {{user.email}}</li>
                     <li>Username: {{user.username}}</li>
+                    <li>Wins: {{user.wins}}</li>
+                    <li>Losses: {{user.losses}}</li>
                 </ul>
             </div>
         </script>
         <!-- gamelist -->
         <script id="gamelist" type="text/x-template">
             <div class="gamelist" v-if="!loading">
-                <h2 v-if="games.length > 0">Current games:</h2>
-                <h2 v-else>No active games</h2>
-                <ul v-if="games">
-                    <li v-for="game in games" class="game">
+                <h2 v-if="self_games.length > 0">Your current games</h2>
+                <h2 v-else>No active games - challenge someone!</h2>
+                <ul v-if="self_games">
+                    <li v-for="game in self_games" class="game" if>
+                        <a :href="'/game/' + game.id">
+                            <h3>
+                                <span class="player-1">{{game.player_1.username}}</span> VS <span class="player-2">{{game.player_2.username}}</span>
+                            </h3>
+                        </a>
+                    </li>
+                </ul>
+                <br>
+                <h2 v-if="other_games.length > 0">Other games</h2>
+                <ul v-if="other_games">
+                    <li v-for="game in other_games" class="game">
                         <a :href="'/game/' + game.id">
                             <h3>
                                 <span class="player-1">{{game.player_1.username}}</span> VS <span class="player-2">{{game.player_2.username}}</span>
@@ -119,20 +144,29 @@
         <script id="game-cell" type="text/x-template">
             <div class="position">
                 <div class="circle" :class="classObject">
-                    {{position}}
+                    <!-- {{position}} -->
                 </div>
             </div>
         </script>
         <!-- userlist -->
         <script id="userlist" type="text/x-template">
             <div class="userlist" v-if="!loading">
+                <h2>Challengers</h2>
+                <ul v-if="challengers">
+                    <li v-for="c in challengers" class="user">
+                        <img :src="c.image_url" alt="">
+                        <span>{{c.username}}</span>
+                        <button @click="accept(c.id)">Accept challenge!</button>
+                    </li>
+                </ul>
+                <br>
                 <h2>Users</h2>
                 <ul v-if="users">
-                    <li v-for="user in users" class="user">
+                    <li v-for="user in users" class="user" v-if="user.id !== user_id">
                         <img :src="user.image_url" alt="">
                         <span>{{user.username}}</span>
+                        <button @click="challenge(user.id)">Challenge!</button>
                     </li>
-
                 </ul>
 
             </div>
