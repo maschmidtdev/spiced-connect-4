@@ -12,7 +12,7 @@
             ),
     });
     const cookieSecret =
-        process.env.COOKIE_SECRET || require('./secrets.json').cookieSecret;
+        process.env.COOKIE_SECRET || require('./secret.json').cookieSecret;
     const cookieSession = require('cookie-session');
     const cookieSessionMiddleware = cookieSession({
         secret: cookieSecret,

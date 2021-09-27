@@ -6,7 +6,7 @@ var dbUrl;
 if (process.env.NODE_ENV === 'production') {
     dbUrl = process.env.DATABASE_URL;
 } else {
-    const { username, password } = require('./secrets.json');
+    const { username, password } = require('./secret.json');
     dbUrl = `postgres:${username}:${password}@localhost:5432/${database}`;
 }
 
