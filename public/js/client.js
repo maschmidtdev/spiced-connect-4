@@ -1,7 +1,8 @@
 (function () {
     //  ===================== Socket handling ==========================
 
-    const socket = io();
+    // const socket = io.connect('/', { transports: ['websocket'] });
+    const socket = io.connect();
     // import { init, socket } from '../../socket';
     // init();
 
@@ -148,12 +149,15 @@
             };
         },
         mounted: function () {
-            socket.on('modal', (message) => {
+            socket.on('modal', ({ message, command }) => {
                 this.show = true;
                 this.message = message;
                 setTimeout(() => {
                     this.show = false;
-                }, 3000);
+                    if (command === 'refresh') {
+                        window.location = '/';
+                    }
+                }, 2000);
             });
         },
         watch: {},
@@ -216,7 +220,9 @@
                         );
                     })
                     .catch((error) => {
-                        socket.emit('modal', error.response.data.error);
+                        socket.emit('modal', {
+                            message: error.response.data.error,
+                        });
                     });
             },
             accept: function (challenger_id) {
@@ -230,10 +236,10 @@
                             '[client:userlist:accept] response:',
                             response
                         );
-                        socket.emit(
-                            'modal',
-                            'Game accepted! Refresh page to join'
-                        );
+                        socket.emit('modal', {
+                            message: 'Game accepted!',
+                            command: 'refresh',
+                        });
                     });
             },
         },
@@ -248,6 +254,7 @@
                 loading: true,
                 self_games: null,
                 other_games: null,
+                user_id: null,
             };
         },
         mounted: async function () {
@@ -255,6 +262,7 @@
             const response = await axios.get('/api/user_id');
             let games = data;
             let user_id = response.data;
+            this.user_id = user_id;
 
             let player_1, player_2;
             // Get player data into game objects

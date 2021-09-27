@@ -87,7 +87,10 @@
                     <li v-for="game in self_games" class="game" if>
                         <a :href="'/game/' + game.id">
                             <h3>
-                                <span class="player-1">{{game.player_1.username}}</span> VS <span class="player-2">{{game.player_2.username}}</span>
+                                <img v-if="game.player_1.id !== user_id" :src="game.player_1.image_url" :alt="game.player_1.username">
+                                <img v-if="game.player_2.id !== user_id" :src="game.player_2.image_url" :alt="game.player_2.username">
+                                <span v-if="game.player_1.id !== user_id" class="player-1">{{game.player_1.username}}</span>
+                                <span v-if="game.player_2.id !== user_id" class="player-2">{{game.player_2.username}}</span>
                             </h3>
                         </a>
                     </li>
@@ -98,7 +101,10 @@
                     <li v-for="game in other_games" class="game">
                         <a :href="'/game/' + game.id">
                             <h3>
-                                <span class="player-1">{{game.player_1.username}}</span> VS <span class="player-2">{{game.player_2.username}}</span>
+                                <img :src="game.player_1.image_url" :alt="game.player_1.username">
+                                <span class="player-1">{{game.player_1.username}}</span> VS
+                                <span class="player-2">{{game.player_2.username}}</span>
+                                <img :src="game.player_2.image_url" :alt="game.player_2.username">
                             </h3>
                         </a>
                     </li>
@@ -151,7 +157,7 @@
         <!-- userlist -->
         <script id="userlist" type="text/x-template">
             <div class="userlist" v-if="!loading">
-                <h2>Challengers</h2>
+                <h2 v-if="challengers.length > 0">Challengers</h2>
                 <ul v-if="challengers">
                     <li v-for="c in challengers" class="user">
                         <img :src="c.image_url" alt="">
@@ -159,7 +165,6 @@
                         <button @click="accept(c.id)">Accept challenge!</button>
                     </li>
                 </ul>
-                <br>
                 <h2>Users</h2>
                 <ul v-if="users">
                     <li v-for="user in users" class="user" v-if="user.id !== user_id">

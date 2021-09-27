@@ -93,6 +93,41 @@ function getChallengers(user_id) {
             console.log(error);
         });
 }
+function addWin(user_id) {
+    // console.log('[db:addWin');
+    return db
+        .query(
+            `UPDATE users SET wins = wins + 1
+                WHERE id = $1
+                RETURNING *`,
+            [user_id]
+            // [user_id]
+        )
+        .then((result) => {
+            console.log('[db:addWin] result.rows', result.rows);
+            return result.rows;
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
+function addLoss(user_id) {
+    // console.log('[db:addLoss');
+    return db
+        .query(
+            `UPDATE users SET losses = losses + 1
+                WHERE id = $1
+                RETURNING *`,
+            [user_id]
+        )
+        .then((result) => {
+            console.log('[db:addLoss] result.rows', result.rows);
+            return result.rows;
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
 
 // Games
 function createGame({ player_1, player_2 }) {
@@ -156,10 +191,12 @@ function getGameById(game_id) {
 function getGame({ player_1, player_2 }) {
     // console.log('[db:getGame]');
     return db
-        .query(`SELECT * FROM games WHERE player_1 = $1 AND player_2 = $2`, [
-            player_1,
-            player_2,
-        ])
+        .query(
+            `SELECT * FROM games
+            WHERE (player_1 = $1 AND player_2 = $2)
+            OR (player_1 = $2 AND player_2 = $1)`,
+            [player_1, player_2]
+        )
         .then((result) => {
             // console.log('result.rows[0]', result.rows[0]);
             return result.rows[0];
@@ -208,6 +245,8 @@ module.exports = {
     getChallengers,
     getUserByEmail,
     getUserById,
+    addWin,
+    addLoss,
     createGame,
     getGames,
     getGame,

@@ -224,6 +224,7 @@ li.game {
     padding: 0.5rem;
     border-radius: 5px;
     background-color: rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
 }
 li.game:hover {
     cursor: pointer;
@@ -242,11 +243,19 @@ li.user {
     display: flex;
     justify-content: space-around;
     align-items: center;
+    transition: all 0.3s ease;
 }
-li.user * {
-    margin: 0 0.3rem;
+li.game a h3 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+li.user *,
+li.game a h3 * {
+    margin: 0 0.5rem;
 }
 li.user img,
+li.game img,
 .top-nav img {
     border-radius: 50%;
     width: 50px;

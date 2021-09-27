@@ -25,6 +25,8 @@
         getChallengers,
         getUserByEmail,
         getUserById,
+        addWin,
+        addLoss,
         createGame,
         getGames,
         getGame,
@@ -47,9 +49,9 @@
     );
     app.use(express.json());
     app.use(cookieSessionMiddleware);
-    // io.use(function (socket, next) {
-    //     cookieSessionMiddleware(socket.request, socket.request.res, next);
-    // });
+    io.use(function (socket, next) {
+        cookieSessionMiddleware(socket.request, socket.request.res, next);
+    });
     // io.configure(function () {
     //     io.set('transports', ['xhr-polling']);
     //     io.set('polling duration', 10);
@@ -269,12 +271,12 @@
             clients = clients.filter((client) => client !== socket.id);
         });
 
-        socket.on('modal', (message) => {
-            socket.emit('modal', message);
+        socket.on('modal', ({ message, command }) => {
+            socket.emit('modal', { message, command });
         });
 
         // Player clicks
-        socket.on('place_tile', ({ col, game_id, user_id }) => {
+        socket.on('place_tile', async ({ col, game_id, user_id }) => {
             console.log('[server:socket:place_tile]');
             // Get the current game
             var game = games.filter((game) => game.id == game_id)[0];
@@ -306,6 +308,13 @@
                 // Switch the active turn
                 game.turn =
                     game.turn === game.player_1 ? game.player_2 : game.player_1;
+            } else {
+                const loser_id =
+                    game.turn === game.player_1 ? game.player_2 : game.player_1;
+                const loss = await addLoss(loser_id);
+                const win = await addWin(game.turn);
+
+                console.log('[server:] vitory:', win, loss);
             }
 
             // console.log('[server:place_tile] game:', game);
@@ -381,16 +390,11 @@
         return -1;
     }
     function server_placeTile(col, game) {
-        console.log('[server_placeTile] game', game);
-        console.log('[server_placeTile] game.turn', game.turn);
-        console.log('[server_placeTile] game.player_1', game.player_1);
-        console.log('[server_placeTile] game.player_2', game.player_2);
-
         for (var i = (col + 1) * 6 - 1; i >= (col + 1) * 6 - 6; i--) {
             if (game.gamestate[i] == 0) {
                 game.gamestate[i] =
                     game.turn === game.player_1 ? game.player_1 : game.player_2;
-                console.log('[server_placeTile] gamestate:', game.gamestate);
+                // console.log('[server_placeTile] gamestate:', game.gamestate);
                 return i - col * 6;
             }
         }
