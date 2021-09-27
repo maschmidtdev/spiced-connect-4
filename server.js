@@ -86,7 +86,6 @@
         users = users.filter((user) => {
             for (c of challengers) {
                 if (user.id === c.id) {
-                    console.log('return false');
                     return false;
                 }
             }
@@ -109,9 +108,6 @@
     app.post('/api/login', async (req, res) => {
         const { email, password } = req.body;
         const response = await getUserByEmail(email);
-        // const response = await getUserByEmail('maschmidt.dev@gmail.com');
-        console.log('[server:api/login] email:', req.body.email);
-        console.log('[server:api/login] response:', response);
         if (response) {
             req.session.user_id = response.id;
         }
@@ -131,7 +127,6 @@
     });
     app.post('/api/accept', async (req, res) => {
         const response = await acceptGame(req.body);
-        console.log('[server:/api/accept] response:', response);
         games = games.filter((game) => game.id !== response[0].id);
         games.push({
             ...response[0],
@@ -363,7 +358,6 @@
         });
 
         socket.on('reset', () => {
-            console.log('reset');
             init();
             io.sockets.emit('reset');
         });
@@ -401,54 +395,6 @@
         return -1;
     }
 
-    function getColPositions(col) {
-        var positions = [];
-        for (i = col * 6; i <= col * 6 + 5; i++) {
-            positions.push(i);
-        }
-        return positions;
-    }
-    function getRowPositions(row) {
-        var positions = [];
-        for (var i = 0; i <= 6; i++) {
-            positions.push(i * 6 + row);
-        }
-        return positions;
-    }
-    function getTopDiagonal(col, row) {
-        var positions = [];
-
-        // Get top left position of diagonal
-        while (col > 0 && row > 0) {
-            col--;
-            row--;
-        }
-
-        // Add positions diagonally down
-        while (row <= 5 && col <= 6) {
-            positions.push(col * 6 + row);
-            row++;
-            col++;
-        }
-        return positions;
-    }
-    function getBottomDiagonal(col, row) {
-        var positions = [];
-
-        // Get bottom left position of diagonal
-        while (col > 0 && row < 5) {
-            col--;
-            row++;
-        }
-
-        // Add positions diagonally up
-        while (row >= 0 && col <= 6) {
-            positions.push(col * 6 + row);
-            row--;
-            col++;
-        }
-        return positions;
-    }
     function server_getColPositions(col) {
         var positions = [];
         for (i = col * 6; i <= col * 6 + 5; i++) {
@@ -498,34 +444,6 @@
         return positions;
     }
 
-    function checkVictory(checkPositions, index) {
-        if (index >= checkPositions.length) {
-            return false;
-        } else {
-            var count = 0;
-            var winPositions = [];
-
-            for (var i = 0; i < checkPositions[index].length; i++) {
-                var current = checkPositions[index][i];
-
-                if (gameBoard[current] === currentPlayer) {
-                    winPositions.push(current);
-                    count++;
-                    if (count >= 4) {
-                        io.sockets.emit('finish', {
-                            positions: winPositions,
-                            player: currentPlayer,
-                        });
-                        return true;
-                    }
-                } else {
-                    count = 0;
-                    winPositions = [];
-                }
-            }
-            return checkVictory(checkPositions, index + 1);
-        }
-    }
     function server_checkVictory(game, checkPositions, index) {
         if (index >= checkPositions.length) {
             return false;
@@ -549,18 +467,6 @@
                 }
             }
             return server_checkVictory(game, checkPositions, index + 1);
-        }
-    }
-
-    function switchTurn() {
-        if (currentPlayer === 1) {
-            currentPlayer++;
-            io.to(clients[0]).emit('turn', false);
-            io.to(clients[1]).emit('turn', true);
-        } else {
-            currentPlayer = 1;
-            io.to(clients[0]).emit('turn', true);
-            io.to(clients[1]).emit('turn', false);
         }
     }
 

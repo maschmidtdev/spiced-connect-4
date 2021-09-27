@@ -231,11 +231,7 @@
                         player_1: challenger_id,
                         player_2: this.user_id,
                     })
-                    .then((response) => {
-                        console.log(
-                            '[client:userlist:accept] response:',
-                            response
-                        );
+                    .then(() => {
                         socket.emit('modal', {
                             message: 'Game accepted!',
                             command: 'refresh',
@@ -326,7 +322,6 @@
                 }
             });
             socket.on('placeTile', ({ index, player }) => {
-                console.log('[placeTile]');
                 $('.position')
                     .eq(index)
                     .addClass('player-' + player);
@@ -334,11 +329,7 @@
             this.loading = false;
         },
         watch: {},
-        methods: {
-            someFunction: function () {
-                console.log('test');
-            },
-        },
+        methods: {},
     });
     const game_column = Vue.component('game-column', {
         props: ['col', 'game'],
